@@ -22,7 +22,11 @@ export class MemStorage implements IStorage {
 
   async saveOrgConnection(connection: InsertOrgConnection): Promise<OrgConnection> {
     const id = this.currentConnectionId++;
-    const orgConnection = { ...connection, id };
+    const orgConnection: OrgConnection = {
+      id,
+      ...connection,
+      orgId: null
+    };
     this.connections.set(id, orgConnection);
     return orgConnection;
   }

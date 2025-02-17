@@ -17,7 +17,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const connectionSchema = z.object({
-  instanceUrl: z.string().url("Please enter a valid Salesforce URL"),
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
   orgType: z.enum(["production", "sandbox"]),
@@ -38,7 +37,6 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
   const form = useForm<ConnectionFormData>({
     resolver: zodResolver(connectionSchema),
     defaultValues: {
-      instanceUrl: "",
       username: "",
       password: "",
       orgType: "production"

@@ -14,7 +14,7 @@ export const orgConnections = pgTable("org_connections", {
 export const metadata = pgTable("metadata", {
   id: serial("id").primaryKey(),
   orgId: text("org_id").notNull(),
-  type: text("type").notNull(),
+  type: text("type", { enum: ["Profile", "CustomObject", "CustomField", "ValidationRule"] }).notNull(),
   data: jsonb("data").notNull()
 });
 
@@ -26,4 +26,4 @@ export type InsertMetadata = z.infer<typeof insertMetadataSchema>;
 export type OrgConnection = typeof orgConnections.$inferSelect;
 export type Metadata = typeof metadata.$inferSelect;
 
-export type MetadataType = "Profile" | "CustomObject" | "CustomField" | "ValidationRule" | "CustomSetting" | "CustomMetadata";
+export type MetadataType = "Profile" | "CustomObject" | "CustomField" | "ValidationRule";

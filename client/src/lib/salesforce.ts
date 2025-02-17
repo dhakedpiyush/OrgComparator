@@ -6,16 +6,16 @@ export interface MetadataResponse {
   objects?: Record<string, any>;
   fields?: Record<string, any>;
   validationRules?: Record<string, any>;
-  customSettings?: Record<string, any>;
-  customMetadata?: Record<string, any>;
 }
 
-export async function createConnection(instanceUrl: string, accessToken: string) {
+export async function createConnection(loginUrl: string, username: string, password: string) {
   try {
     const conn = new jsforce.Connection({
-      instanceUrl,
-      accessToken
+      loginUrl,
     });
+
+    // Login using username and password
+    await conn.login(username, password);
 
     // Verify connection by attempting to get user info
     await conn.identity();
@@ -28,7 +28,7 @@ export async function createConnection(instanceUrl: string, accessToken: string)
 
 export async function fetchMetadata(conn: jsforce.Connection, type: MetadataType): Promise<Record<string, any>> {
   try {
-    const metadata = await conn.metadata.read(type);
+    const metadata = await conn.metadata.list([{ type }]);
     return Array.isArray(metadata) ? metadata.reduce((acc, item) => {
       acc[item.fullName] = item;
       return acc;
