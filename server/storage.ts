@@ -3,6 +3,7 @@ import { OrgConnection, Metadata, InsertOrgConnection, InsertMetadata, MetadataT
 export interface IStorage {
   saveOrgConnection(connection: InsertOrgConnection): Promise<OrgConnection>;
   getOrgConnection(orgId: string): Promise<OrgConnection | undefined>;
+  getAllConnections(): Promise<OrgConnection[]>;
   saveMetadata(metadata: InsertMetadata): Promise<Metadata>;
   getMetadata(orgId: string, type: MetadataType): Promise<Metadata | undefined>;
 }
@@ -33,6 +34,10 @@ export class MemStorage implements IStorage {
 
   async getOrgConnection(orgId: string): Promise<OrgConnection | undefined> {
     return Array.from(this.connections.values()).find(conn => conn.orgId === orgId);
+  }
+
+  async getAllConnections(): Promise<OrgConnection[]> {
+    return Array.from(this.connections.values());
   }
 
   async saveMetadata(metadata: InsertMetadata): Promise<Metadata> {

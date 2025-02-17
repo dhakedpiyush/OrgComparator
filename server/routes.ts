@@ -38,34 +38,59 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/org/:orgId", async (req, res) => {
-    const connection = await storage.getOrgConnection(req.params.orgId);
-    if (connection) {
-      res.json(connection);
-    } else {
-      res.status(404).json({ error: "Org not found" });
+  // Get metadata for source org
+  app.get("/api/metadata/source/:type", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const validType = type as MetadataType;
+
+      // Get the first connected org as source
+      const connections = await storage.getAllConnections();
+      const sourceConnection = connections[0];
+
+      if (!sourceConnection) {
+        return res.status(404).json({ error: "Source org not connected" });
+      }
+
+      // Reconnect to Salesforce
+      const conn = new jsforce.Connection({
+        loginUrl: sourceConnection.instanceUrl
+      });
+
+      await conn.login(sourceConnection.username, sourceConnection.password);
+
+      // Fetch metadata using jsforce metadata API
+      const metadata = await conn.metadata.list([{ type: validType }]);
+      res.json(metadata);
+    } catch (error) {
+      console.error('Metadata fetch error:', error);
+      res.status(500).json({ error: "Failed to fetch metadata" });
     }
   });
 
-  app.get("/api/metadata/:orgId/:type", async (req, res) => {
+  // Get metadata for target org
+  app.get("/api/metadata/target/:type", async (req, res) => {
     try {
-      const { orgId, type } = req.params;
+      const { type } = req.params;
       const validType = type as MetadataType;
 
-      const connection = await storage.getOrgConnection(orgId);
-      if (!connection) {
-        return res.status(404).json({ error: "Org not found" });
+      // Get the second connected org as target
+      const connections = await storage.getAllConnections();
+      const targetConnection = connections[1];
+
+      if (!targetConnection) {
+        return res.status(404).json({ error: "Target org not connected" });
       }
 
-      // Reconnect to Salesforce using stored credentials
+      // Reconnect to Salesforce
       const conn = new jsforce.Connection({
-        loginUrl: connection.instanceUrl
+        loginUrl: targetConnection.instanceUrl
       });
 
-      await conn.login(connection.username, connection.password);
+      await conn.login(targetConnection.username, targetConnection.password);
 
       // Fetch metadata using jsforce metadata API
-      const metadata = await conn.metadata.read(validType);
+      const metadata = await conn.metadata.list([{ type: validType }]);
       res.json(metadata);
     } catch (error) {
       console.error('Metadata fetch error:', error);
