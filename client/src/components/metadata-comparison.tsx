@@ -40,7 +40,7 @@ function sortByApiName(differences: any[]): any[] {
   return differences.sort((a, b) => a.field.localeCompare(b.field));
 }
 
-export function MetadataComparison({ sourceData, targetData, type }: ComparisonProps) {
+export function MetadataComparison({ sourceData, targetData, type, showOnlyChanges, filterStatus }: ComparisonProps) {
   const differences = [];
   const processedFields = new Set();
 
@@ -77,15 +77,15 @@ export function MetadataComparison({ sourceData, targetData, type }: ComparisonP
 
   let filteredDifferences = differences;
   
-  if (props.showOnlyChanges) {
+  if (showOnlyChanges) {
     filteredDifferences = differences.filter(diff => 
       diff.sourceValue !== diff.targetValue
     );
   }
 
-  if (props.filterStatus && props.filterStatus !== 'all') {
+  if (filterStatus && filterStatus !== 'all') {
     filteredDifferences = filteredDifferences.filter(diff => 
-      diff.status === props.filterStatus
+      diff.status === filterStatus
     );
   }
 

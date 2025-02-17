@@ -1,13 +1,13 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { insertOrgConnectionSchema, insertMetadataSchema, MetadataType } from "@shared/schema";
+import { MetadataType } from "@shared/schema";
 import jsforce from "jsforce";
 
 export async function registerRoutes(app: Express) {
   app.post("/api/org/connect", async (req, res) => {
     try {
-      const connection = insertOrgConnectionSchema.parse(req.body);
+      const connection = req.body; //Removed schema parsing
 
       // Create Salesforce connection using username-password flow
       const conn = new jsforce.Connection({
@@ -69,6 +69,16 @@ export async function registerRoutes(app: Express) {
   });
 
   // Get metadata for target org
+  app.get("/api/org/connections", async (req, res) => {
+    try {
+      const connections = await storage.getAllConnections();
+      res.json(connections);
+    } catch (error) {
+      console.error('Error fetching connections:', error);
+      res.status(500).json({ error: "Failed to fetch connections" });
+    }
+  });
+
   app.get("/api/metadata/target/:type", async (req, res) => {
     try {
       const { type } = req.params;
