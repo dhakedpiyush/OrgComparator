@@ -1,0 +1,162 @@
+Development Prompt
+Feature:
+Implement a Salesforce org connection page that supports OAuth login redirection for two orgs.
+
+Requirements:
+
+UI Layout:
+
+Create two sections (or blocks), one for Org 1 and another for Org 2.
+Each section should have:
+A text input for a user-friendly org name.
+A set of radio buttons or a dropdown to choose the org environment: Production or Sandbox.
+A Login button.
+Redirection Logic:
+
+When the user clicks the Login button for an org, read the selected environment.
+Determine the correct Salesforce login URL:
+Production: https://login.salesforce.com/services/oauth2/authorize
+Sandbox: https://test.salesforce.com/services/oauth2/authorize
+Append necessary OAuth query parameters such as:
+response_type=code
+client_id (your Connected App’s Client ID)
+redirect_uri (where Salesforce sends the auth code back)
+Additional scopes if needed.
+Redirect the browser to this URL so the user can authenticate via Salesforce’s standard login page.
+Post-Login Handling (Overview):
+
+After successful login, your OAuth callback endpoint (on your server) should handle the authorization code exchange to obtain an access token.
+(For this prompt, we focus on the redirection part.)
+Developer Considerations:
+
+Use plain HTML/JavaScript for the UI prototype. You can later integrate this into your framework of choice.
+Keep the code modular so that each org’s connection flow is independent.
+Sample Code
+Below is an example HTML page with embedded JavaScript that meets the above requirements:
+
+html
+Copy
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salesforce Org Connector</title>
+  <style>
+    .org-block {
+      border: 1px solid #ccc;
+      padding: 1em;
+      margin: 1em 0;
+    }
+    .connected {
+      border-color: green;
+      background-color: #e6ffe6;
+    }
+    .env-options {
+      margin-bottom: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Salesforce Org Connector</h1>
+
+  <!-- Org 1 Connection Block -->
+  <div id="org1-block" class="org-block">
+    <h2>Org 1</h2>
+    <label>
+      Org Name:
+      <input type="text" id="org1-name" placeholder="e.g., Org1" />
+    </label>
+    <div class="env-options">
+      <label>
+        <input type="radio" name="org1-env" value="production" checked />
+        Production
+      </label>
+      <label>
+        <input type="radio" name="org1-env" value="sandbox" />
+        Sandbox
+      </label>
+    </div>
+    <button onclick="redirectToSalesforce('org1')">Login Org 1</button>
+    <div id="org1-status"></div>
+  </div>
+
+  <!-- Org 2 Connection Block -->
+  <div id="org2-block" class="org-block">
+    <h2>Org 2</h2>
+    <label>
+      Org Name:
+      <input type="text" id="org2-name" placeholder="e.g., Org2" />
+    </label>
+    <div class="env-options">
+      <label>
+        <input type="radio" name="org2-env" value="production" checked />
+        Production
+      </label>
+      <label>
+        <input type="radio" name="org2-env" value="sandbox" />
+        Sandbox
+      </label>
+    </div>
+    <button onclick="redirectToSalesforce('org2')">Login Org 2</button>
+    <div id="org2-status"></div>
+  </div>
+
+  <script>
+    // Replace these with your actual Connected App details
+    const CLIENT_ID = 'YOUR_CONNECTED_APP_CLIENT_ID';
+    const REDIRECT_URI = encodeURIComponent('https://yourapp.com/oauth/callback');
+    const RESPONSE_TYPE = 'code';
+    const SCOPE = 'full';
+
+    /**
+     * Redirects the user to the appropriate Salesforce OAuth login page based on the selected environment.
+     * @param {string} orgKey - Either 'org1' or 'org2'
+     */
+    function redirectToSalesforce(orgKey) {
+      // Get the selected environment (production or sandbox)
+      const envRadios = document.getElementsByName(`${orgKey}-env`);
+      let selectedEnv = 'production';
+      for (const radio of envRadios) {
+        if (radio.checked) {
+          selectedEnv = radio.value;
+          break;
+        }
+      }
+      
+      // Determine the correct Salesforce login URL based on environment
+      const loginBaseUrl = selectedEnv === 'sandbox'
+        ? 'https://test.salesforce.com/services/oauth2/authorize'
+        : 'https://login.salesforce.com/services/oauth2/authorize';
+
+      // Build the full OAuth URL with query parameters
+      const oauthUrl = `${loginBaseUrl}?response_type=${RESPONSE_TYPE}&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
+
+      // Optionally update the status message
+      document.getElementById(`${orgKey}-status`).textContent = `Redirecting to ${selectedEnv} login...`;
+
+      // Redirect the browser to the Salesforce login page
+      window.location.href = oauthUrl;
+    }
+  </script>
+</body>
+</html>
+How It Works:
+User Interaction:
+
+In each org block, the user enters a friendly org name (optional) and selects the org environment using radio buttons.
+When the Login button is clicked, the redirectToSalesforce function is called with the corresponding org key (e.g., "org1").
+Redirection Logic:
+
+The function reads the selected radio button to determine if the org is production or sandbox.
+Based on the selection, it chooses the appropriate Salesforce OAuth URL:
+For Production: https://login.salesforce.com/services/oauth2/authorize
+For Sandbox: https://test.salesforce.com/services/oauth2/authorize
+The URL is then constructed with your Connected App’s details (client ID, redirect URI, etc.) and the browser is redirected.
+Post-Login:
+
+After a successful login, Salesforce will redirect back to your specified REDIRECT_URI with an authorization code.
+(Handle the OAuth callback on your server to complete the login process.)
+This prompt and sample code should give you a solid starting point to develop the feature where each Salesforce org connection has a selectable environment and a Login button that performs an OAuth redirect to the appropriate Salesforce login page.
+
+Feel free to extend or modify the code as needed for your project!
