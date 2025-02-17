@@ -4,23 +4,50 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MetadataType } from "@shared/schema";
 
-interface MetadataResponse {
-  profiles?: Record<string, any>;
-  objects?: Record<string, any>;
-  fields?: Record<string, any>;
-  validationRules?: Record<string, any>;
-}
-
 export default function Compare() {
-  const { data: sourceMetadata, isLoading: sourceLoading } = useQuery<MetadataResponse>({
-    queryKey: ["/api/metadata/source/all"]
+  // Query for Profiles
+  const { data: sourceProfiles, isLoading: sourceProfilesLoading } = useQuery({
+    queryKey: ["/api/metadata/source/Profile"],
   });
 
-  const { data: targetMetadata, isLoading: targetLoading } = useQuery<MetadataResponse>({
-    queryKey: ["/api/metadata/target/all"]
+  const { data: targetProfiles, isLoading: targetProfilesLoading } = useQuery({
+    queryKey: ["/api/metadata/target/Profile"],
   });
 
-  if (sourceLoading || targetLoading) {
+  // Query for Custom Objects
+  const { data: sourceObjects, isLoading: sourceObjectsLoading } = useQuery({
+    queryKey: ["/api/metadata/source/CustomObject"],
+  });
+
+  const { data: targetObjects, isLoading: targetObjectsLoading } = useQuery({
+    queryKey: ["/api/metadata/target/CustomObject"],
+  });
+
+  // Query for Custom Fields
+  const { data: sourceFields, isLoading: sourceFieldsLoading } = useQuery({
+    queryKey: ["/api/metadata/source/CustomField"],
+  });
+
+  const { data: targetFields, isLoading: targetFieldsLoading } = useQuery({
+    queryKey: ["/api/metadata/target/CustomField"],
+  });
+
+  // Query for Validation Rules
+  const { data: sourceRules, isLoading: sourceRulesLoading } = useQuery({
+    queryKey: ["/api/metadata/source/ValidationRule"],
+  });
+
+  const { data: targetRules, isLoading: targetRulesLoading } = useQuery({
+    queryKey: ["/api/metadata/target/ValidationRule"],
+  });
+
+  const isLoading = 
+    sourceProfilesLoading || targetProfilesLoading ||
+    sourceObjectsLoading || targetObjectsLoading ||
+    sourceFieldsLoading || targetFieldsLoading ||
+    sourceRulesLoading || targetRulesLoading;
+
+  if (isLoading) {
     return <Skeleton className="w-full h-[400px]" />;
   }
 
@@ -38,32 +65,32 @@ export default function Compare() {
 
         <TabsContent value="profiles">
           <MetadataComparison
-            sourceData={sourceMetadata?.profiles || {}}
-            targetData={targetMetadata?.profiles || {}}
+            sourceData={sourceProfiles || {}}
+            targetData={targetProfiles || {}}
             type="Profiles"
           />
         </TabsContent>
 
         <TabsContent value="objects">
           <MetadataComparison
-            sourceData={sourceMetadata?.objects || {}}
-            targetData={targetMetadata?.objects || {}}
+            sourceData={sourceObjects || {}}
+            targetData={targetObjects || {}}
             type="Objects"
           />
         </TabsContent>
 
         <TabsContent value="fields">
           <MetadataComparison
-            sourceData={sourceMetadata?.fields || {}}
-            targetData={targetMetadata?.fields || {}}
+            sourceData={sourceFields || {}}
+            targetData={targetFields || {}}
             type="Fields"
           />
         </TabsContent>
 
         <TabsContent value="validationRules">
           <MetadataComparison
-            sourceData={sourceMetadata?.validationRules || {}}
-            targetData={targetMetadata?.validationRules || {}}
+            sourceData={sourceRules || {}}
+            targetData={targetRules || {}}
             type="Validation Rules"
           />
         </TabsContent>
