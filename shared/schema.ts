@@ -5,8 +5,8 @@ import { z } from "zod";
 export const orgConnections = pgTable("org_connections", {
   id: serial("id").primaryKey(),
   instanceUrl: text("instance_url").notNull(),
-  accessToken: text("access_token").notNull(),
-  refreshToken: text("refresh_token").notNull(),
+  username: text("username").notNull(),
+  password: text("password").notNull(),
   orgType: text("org_type", { enum: ["production", "sandbox"] }).notNull(),
   orgId: text("org_id").notNull(),
 });

@@ -9,11 +9,13 @@ export async function registerRoutes(app: Express) {
     try {
       const connection = insertOrgConnectionSchema.parse(req.body);
 
-      // Verify connection with Salesforce
+      // Create Salesforce connection using username-password flow
       const conn = new jsforce.Connection({
-        instanceUrl: connection.instanceUrl,
-        accessToken: connection.accessToken
+        loginUrl: connection.instanceUrl
       });
+
+      // Login with username and password
+      await conn.login(connection.username, connection.password);
 
       // Get org ID from Salesforce
       const userInfo = await conn.identity();
@@ -40,17 +42,6 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/metadata", async (req, res) => {
-    try {
-      const metadata = insertMetadataSchema.parse(req.body);
-      const saved = await storage.saveMetadata(metadata);
-      res.json(saved);
-    } catch (error) {
-      console.error('Metadata save error:', error);
-      res.status(400).json({ error: "Invalid metadata" });
-    }
-  });
-
   app.get("/api/metadata/:orgId/:type", async (req, res) => {
     try {
       const { orgId, type } = req.params;
@@ -61,12 +52,15 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Org not found" });
       }
 
+      // Reconnect to Salesforce using stored credentials
       const conn = new jsforce.Connection({
-        instanceUrl: connection.instanceUrl,
-        accessToken: connection.accessToken
+        loginUrl: connection.instanceUrl
       });
 
-      const metadata = await conn.metadata.read(validType);
+      await conn.login(connection.username, connection.password);
+
+      // Fetch metadata using jsforce metadata API
+      const metadata = await conn.metadata.read(validType, '*');
       res.json(metadata);
     } catch (error) {
       console.error('Metadata fetch error:', error);

@@ -18,8 +18,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const connectionSchema = z.object({
   instanceUrl: z.string().url("Please enter a valid Salesforce URL"),
-  accessToken: z.string().min(1, "Access token is required"),
-  refreshToken: z.string().min(1, "Refresh token is required"),
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
   orgType: z.enum(["production", "sandbox"]),
 });
 
@@ -31,7 +31,7 @@ interface OrgConnectionProps {
 }
 
 export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
-  const [showToken, setShowToken] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
 
@@ -39,8 +39,8 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
     resolver: zodResolver(connectionSchema),
     defaultValues: {
       instanceUrl: "",
-      accessToken: "",
-      refreshToken: "",
+      username: "",
+      password: "",
       orgType: "production"
     }
   });
@@ -82,7 +82,7 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
                 <HelpCircle className="h-4 w-4" />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Enter your Salesforce instance URL and authentication tokens</p>
+                <p>Enter your Salesforce credentials to connect to your org</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -92,7 +92,7 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Input
-              placeholder="Instance URL (e.g., https://yourorg.my.salesforce.com)"
+              placeholder="Instance URL (e.g., https://login.salesforce.com)"
               {...form.register("instanceUrl")}
               className="mb-2"
             />
@@ -101,36 +101,35 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
                 {form.formState.errors.instanceUrl.message}
               </p>
             )}
+            <Input
+              placeholder="Username"
+              {...form.register("username")}
+              className="mb-2"
+            />
+            {form.formState.errors.username && (
+              <p className="text-sm text-red-500 mt-1">
+                {form.formState.errors.username.message}
+              </p>
+            )}
             <div className="relative">
               <Input
-                type={showToken ? "text" : "password"}
-                placeholder="Access Token"
-                {...form.register("accessToken")}
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                {...form.register("password")}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 className="absolute right-2 top-1/2 -translate-y-1/2"
-                onClick={() => setShowToken(!showToken)}
+                onClick={() => setShowPassword(!showPassword)}
               >
-                {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
-            {form.formState.errors.accessToken && (
+            {form.formState.errors.password && (
               <p className="text-sm text-red-500 mt-1">
-                {form.formState.errors.accessToken.message}
-              </p>
-            )}
-            <Input
-              type={showToken ? "text" : "password"}
-              placeholder="Refresh Token"
-              {...form.register("refreshToken")}
-              className="mt-2"
-            />
-            {form.formState.errors.refreshToken && (
-              <p className="text-sm text-red-500 mt-1">
-                {form.formState.errors.refreshToken.message}
+                {form.formState.errors.password.message}
               </p>
             )}
           </div>
