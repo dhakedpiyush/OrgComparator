@@ -1,3 +1,26 @@
+
+/* Add resizable table styles */
+.resize-x {
+  position: relative;
+  resize: horizontal;
+  overflow: auto;
+}
+
+.resize-x::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background-color: transparent;
+}
+
+.resize-x:hover::after {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

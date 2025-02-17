@@ -38,6 +38,18 @@ export default function Home() {
       >
         Compare Metadata
       </Button>
+
+      <footer className="mt-16 text-center text-gray-600 border-t pt-8">
+        <p className="mb-2">Created By - Piyush Dhaked</p>
+        <a 
+          href="https://www.linkedin.com/in/piyushdhaked/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800"
+        >
+          LinkedIn Profile
+        </a>
+      </footer>
     </div>
   );
 }

@@ -16,20 +16,30 @@ function formatValue(value: any): string {
   if (value === undefined || value === null) return 'Not present';
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (typeof value === 'object') {
-    // Handle arrays
     if (Array.isArray(value)) {
       return value.map(item => 
         typeof item === 'object' ? item.fullName || JSON.stringify(item) : String(item)
       ).join(', ');
     }
-    // Handle objects
     return value.fullName || value.label || JSON.stringify(value);
   }
   return String(value);
 }
 
+function getFieldDetails(field: string, value: any): { label: string; name: string } {
+  if (typeof value === 'object' && value !== null) {
+    return {
+      label: value.label || value.Label || getFriendlyFieldName(field),
+      name: field
+    };
+  }
+  return {
+    label: getFriendlyFieldName(field),
+    name: field
+  };
+}
+
 function getFriendlyFieldName(fieldName: string): string {
-  // Convert camelCase to Title Case with spaces
   return fieldName
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, str => str.toUpperCase())
@@ -44,7 +54,6 @@ export function MetadataComparison({ sourceData, targetData, type, showOnlyChang
   const differences = [];
   const processedFields = new Set();
 
-  // Compare the metadata
   for (const key in sourceData) {
     if (!processedFields.has(key)) {
       const sourceValue = sourceData[key];
@@ -62,7 +71,6 @@ export function MetadataComparison({ sourceData, targetData, type, showOnlyChang
     }
   }
 
-  // Check for items in target that aren't in source
   for (const key in targetData) {
     if (!processedFields.has(key)) {
       differences.push({
@@ -103,50 +111,51 @@ export function MetadataComparison({ sourceData, targetData, type, showOnlyChang
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[600px] rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px]">Field Name</TableHead>
-                <TableHead>Source Org</TableHead>
-                <TableHead>Target Org</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedDifferences.length === 0 ? (
+          <div className="relative">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No differences found
-                  </TableCell>
+                  <TableHead className="w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[200px] resize-x">Source Org</TableHead>
+                  <TableHead className="min-w-[200px] resize-x">Target Org</TableHead>
                 </TableRow>
-              ) : (
-                sortedDifferences.map((diff, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="font-medium">
-                      {getFriendlyFieldName(diff.field)}
-                    </TableCell>
-                    <TableCell className={diff.status === 'removed' ? 'text-red-500' : ''}>
-                      {formatValue(diff.sourceValue)}
-                    </TableCell>
-                    <TableCell className={diff.status === 'added' ? 'text-green-500' : ''}>
-                      {formatValue(diff.targetValue)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={
-                          diff.status === 'added' ? 'success' :
-                          diff.status === 'removed' ? 'destructive' :
-                          'warning'
-                        }
-                      >
-                        {diff.status}
-                      </Badge>
+              </TableHeader>
+              <TableBody>
+                {sortedDifferences.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                      No differences found
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  sortedDifferences.map((diff, i) => {
+                    const fieldDetails = getFieldDetails(diff.field, diff.sourceValue || diff.targetValue);
+                    return (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              diff.status === 'added' ? 'success' :
+                              diff.status === 'removed' ? 'destructive' :
+                              'warning'
+                            }
+                          >
+                            {diff.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className={diff.status === 'removed' ? 'text-red-500' : ''}>
+                          {formatValue(diff.sourceValue)}
+                        </TableCell>
+                        <TableCell className={diff.status === 'added' ? 'text-green-500' : ''}>
+                          {formatValue(diff.targetValue)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </ScrollArea>
       </CardContent>
     </Card>
