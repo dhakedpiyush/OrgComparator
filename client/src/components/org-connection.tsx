@@ -47,7 +47,15 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
 
   const connectMutation = useMutation({
     mutationFn: async (data: ConnectionFormData) => {
-      const res = await apiRequest("POST", "/api/org/connect", data);
+      // Adjust the instance URL based on org type
+      const loginUrl = data.orgType === "production" 
+        ? "https://login.salesforce.com"
+        : "https://test.salesforce.com";
+
+      const res = await apiRequest("POST", "/api/org/connect", {
+        ...data,
+        instanceUrl: loginUrl
+      });
       return res.json();
     },
     onSuccess: (data) => {
@@ -58,7 +66,7 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
         description: "Your Salesforce org has been connected",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Connection failed",
         description: "Failed to connect to Salesforce org. Please check your credentials.",
@@ -91,16 +99,6 @@ export function OrgConnection({ title, onConnect }: OrgConnectionProps) {
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <Input
-              placeholder="Instance URL (e.g., https://login.salesforce.com)"
-              {...form.register("instanceUrl")}
-              className="mb-2"
-            />
-            {form.formState.errors.instanceUrl && (
-              <p className="text-sm text-red-500 mt-1">
-                {form.formState.errors.instanceUrl.message}
-              </p>
-            )}
             <Input
               placeholder="Username"
               {...form.register("username")}

@@ -8,7 +8,7 @@ export const orgConnections = pgTable("org_connections", {
   username: text("username").notNull(),
   password: text("password").notNull(),
   orgType: text("org_type", { enum: ["production", "sandbox"] }).notNull(),
-  orgId: text("org_id").notNull(),
+  orgId: text("org_id")
 });
 
 export const metadata = pgTable("metadata", {
@@ -18,7 +18,7 @@ export const metadata = pgTable("metadata", {
   data: jsonb("data").notNull()
 });
 
-export const insertOrgConnectionSchema = createInsertSchema(orgConnections).omit({ id: true });
+export const insertOrgConnectionSchema = createInsertSchema(orgConnections).omit({ id: true, orgId: true });
 export const insertMetadataSchema = createInsertSchema(metadata).omit({ id: true });
 
 export type InsertOrgConnection = z.infer<typeof insertOrgConnectionSchema>;
@@ -26,4 +26,4 @@ export type InsertMetadata = z.infer<typeof insertMetadataSchema>;
 export type OrgConnection = typeof orgConnections.$inferSelect;
 export type Metadata = typeof metadata.$inferSelect;
 
-export type MetadataType = "profiles" | "objects" | "fields" | "validationRules" | "customSettings" | "customMetadata";
+export type MetadataType = "Profile" | "CustomObject" | "CustomField" | "ValidationRule" | "CustomSetting" | "CustomMetadata";

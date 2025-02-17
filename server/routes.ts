@@ -14,19 +14,24 @@ export async function registerRoutes(app: Express) {
         loginUrl: connection.instanceUrl
       });
 
-      // Login with username and password
-      await conn.login(connection.username, connection.password);
+      try {
+        // Login with username and password
+        await conn.login(connection.username, connection.password);
 
-      // Get org ID from Salesforce
-      const userInfo = await conn.identity();
-      const orgId = userInfo.organization_id;
+        // Get org ID from Salesforce
+        const userInfo = await conn.identity();
+        const orgId = userInfo.organization_id;
 
-      const savedConnection = await storage.saveOrgConnection({
-        ...connection,
-        orgId
-      });
+        const savedConnection = await storage.saveOrgConnection({
+          ...connection,
+          orgId
+        });
 
-      res.json(savedConnection);
+        res.json(savedConnection);
+      } catch (loginError) {
+        console.error('Login error:', loginError);
+        res.status(401).json({ error: "Invalid Salesforce credentials" });
+      }
     } catch (error) {
       console.error('Connection error:', error);
       res.status(400).json({ error: "Failed to connect to Salesforce org" });
@@ -60,7 +65,7 @@ export async function registerRoutes(app: Express) {
       await conn.login(connection.username, connection.password);
 
       // Fetch metadata using jsforce metadata API
-      const metadata = await conn.metadata.read(validType, '*');
+      const metadata = await conn.metadata.read(validType);
       res.json(metadata);
     } catch (error) {
       console.error('Metadata fetch error:', error);
