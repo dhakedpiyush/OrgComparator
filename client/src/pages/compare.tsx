@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { MetadataComparison } from "@/components/metadata-comparison";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MetadataType } from "@shared/schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface MetadataResponse {
   profiles?: Record<string, any>;
@@ -12,23 +13,43 @@ interface MetadataResponse {
 }
 
 export default function Compare() {
-  const { data: sourceMetadata, isLoading: sourceLoading } = useQuery<MetadataResponse>({
-    queryKey: ["/api/metadata/source/all"]
+  const { data: sourceMetadata, isLoading: sourceLoading, error: sourceError } = useQuery<MetadataResponse>({
+    queryKey: ["/api/metadata/source/all"],
+    retry: 1
   });
 
-  const { data: targetMetadata, isLoading: targetLoading } = useQuery<MetadataResponse>({
-    queryKey: ["/api/metadata/target/all"]
+  const { data: targetMetadata, isLoading: targetLoading, error: targetError } = useQuery<MetadataResponse>({
+    queryKey: ["/api/metadata/target/all"],
+    retry: 1
   });
 
   if (sourceLoading || targetLoading) {
-    return <Skeleton className="w-full h-[400px]" />;
+    return (
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-8">Loading Metadata...</h1>
+        <Skeleton className="w-full h-[400px]" />
+      </div>
+    );
+  }
+
+  if (sourceError || targetError) {
+    return (
+      <div className="container mx-auto py-8">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to fetch metadata. Please ensure both orgs are connected and try again.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-8">Metadata Comparison</h1>
 
-      <Tabs defaultValue="profiles">
+      <Tabs defaultValue="profiles" className="space-y-4">
         <TabsList>
           <TabsTrigger value="profiles">Profiles</TabsTrigger>
           <TabsTrigger value="objects">Objects</TabsTrigger>

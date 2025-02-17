@@ -38,34 +38,46 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/org/:orgId", async (req, res) => {
-    const connection = await storage.getOrgConnection(req.params.orgId);
-    if (connection) {
-      res.json(connection);
-    } else {
-      res.status(404).json({ error: "Org not found" });
-    }
-  });
-
-  app.get("/api/metadata/:orgId/:type", async (req, res) => {
+  // Get all metadata types for an org
+  app.get("/api/metadata/:orgId/all", async (req, res) => {
     try {
-      const { orgId, type } = req.params;
-      const validType = type as MetadataType;
-
+      const { orgId } = req.params;
       const connection = await storage.getOrgConnection(orgId);
+
       if (!connection) {
         return res.status(404).json({ error: "Org not found" });
       }
 
-      // Reconnect to Salesforce using stored credentials
+      // Connect to Salesforce
       const conn = new jsforce.Connection({
         loginUrl: connection.instanceUrl
       });
 
       await conn.login(connection.username, connection.password);
 
-      // Fetch metadata using jsforce metadata API
-      const metadata = await conn.metadata.read(validType);
+      // Fetch metadata for each type
+      const metadataTypes: MetadataType[] = ["Profile", "CustomObject", "CustomField", "ValidationRule"];
+      const metadata: Record<string, any> = {};
+
+      for (const type of metadataTypes) {
+        try {
+          // List metadata of this type
+          const results = await conn.metadata.list([{ type }]);
+
+          // Convert array to record for easier comparison
+          metadata[type.toLowerCase() + 's'] = Array.isArray(results) 
+            ? results.reduce((acc, item) => {
+                acc[item.fullName] = item;
+                return acc;
+              }, {} as Record<string, any>)
+            : { [results.fullName]: results };
+
+        } catch (err) {
+          console.error(`Error fetching ${type} metadata:`, err);
+          metadata[type.toLowerCase() + 's'] = {};
+        }
+      }
+
       res.json(metadata);
     } catch (error) {
       console.error('Metadata fetch error:', error);
