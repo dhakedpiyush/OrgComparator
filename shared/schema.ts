@@ -26,4 +26,4 @@ export type InsertMetadata = z.infer<typeof insertMetadataSchema>;
 export type OrgConnection = typeof orgConnections.$inferSelect;
 export type Metadata = typeof metadata.$inferSelect;
 
-export type MetadataType = "profiles" | "objects" | "fields" | "validationRules";
+export type MetadataType = "profiles" | "objects" | "fields" | "validationRules" | "customSettings" | "customMetadata";
