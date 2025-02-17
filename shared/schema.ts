@@ -14,7 +14,7 @@ export const orgConnections = pgTable("org_connections", {
 export const metadata = pgTable("metadata", {
   id: serial("id").primaryKey(),
   orgId: text("org_id").notNull(),
-  type: text("type", { enum: ["Profile", "CustomObject", "CustomField", "ValidationRule"] }).notNull(),
+  type: text("type", { enum: ["Profile", "CustomObject", "CustomField", "ValidationRule", "ApexClass", "ApexTrigger"] }).notNull(),
   data: jsonb("data").notNull()
 });
 

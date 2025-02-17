@@ -8,6 +8,8 @@ interface ComparisonProps {
   sourceData: any;
   targetData: any;
   type: string;
+  showOnlyChanges?: boolean;
+  filterStatus?: 'all' | 'added' | 'removed' | 'modified';
 }
 
 function formatValue(value: any): string {
@@ -73,7 +75,21 @@ export function MetadataComparison({ sourceData, targetData, type }: ComparisonP
     }
   }
 
-  const sortedDifferences = sortByApiName(differences);
+  let filteredDifferences = differences;
+  
+  if (props.showOnlyChanges) {
+    filteredDifferences = differences.filter(diff => 
+      diff.sourceValue !== diff.targetValue
+    );
+  }
+
+  if (props.filterStatus && props.filterStatus !== 'all') {
+    filteredDifferences = filteredDifferences.filter(diff => 
+      diff.status === props.filterStatus
+    );
+  }
+
+  const sortedDifferences = sortByApiName(filteredDifferences);
 
   return (
     <Card>

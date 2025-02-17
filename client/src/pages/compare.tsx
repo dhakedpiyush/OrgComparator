@@ -41,11 +41,29 @@ export default function Compare() {
     queryKey: ["/api/metadata/target/ValidationRule"],
   });
 
+  const { data: sourceApexClasses, isLoading: sourceApexClassesLoading } = useQuery({
+    queryKey: ["/api/metadata/source/ApexClass"],
+  });
+
+  const { data: targetApexClasses, isLoading: targetApexClassesLoading } = useQuery({
+    queryKey: ["/api/metadata/target/ApexClass"],
+  });
+
+  const { data: sourceApexTriggers, isLoading: sourceApexTriggersLoading } = useQuery({
+    queryKey: ["/api/metadata/source/ApexTrigger"],
+  });
+
+  const { data: targetApexTriggers, isLoading: targetApexTriggersLoading } = useQuery({
+    queryKey: ["/api/metadata/target/ApexTrigger"],
+  });
+
   const isLoading = 
     sourceProfilesLoading || targetProfilesLoading ||
     sourceObjectsLoading || targetObjectsLoading ||
     sourceFieldsLoading || targetFieldsLoading ||
-    sourceRulesLoading || targetRulesLoading;
+    sourceRulesLoading || targetRulesLoading ||
+    sourceApexClassesLoading || targetApexClassesLoading ||
+    sourceApexTriggersLoading || targetApexTriggersLoading;
 
   if (isLoading) {
     return <Skeleton className="w-full h-[400px]" />;
@@ -55,12 +73,30 @@ export default function Compare() {
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-8">Metadata Comparison</h1>
 
+      <div className="flex items-center gap-4 mb-4">
+        <Switch id="show-changes" />
+        <Label htmlFor="show-changes">Only Show Changes</Label>
+        <Select defaultValue="all">
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Changes</SelectItem>
+            <SelectItem value="added">Added Only</SelectItem>
+            <SelectItem value="removed">Removed Only</SelectItem>
+            <SelectItem value="modified">Modified Only</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <Tabs defaultValue="profiles">
         <TabsList>
           <TabsTrigger value="profiles">Profiles</TabsTrigger>
           <TabsTrigger value="objects">Objects</TabsTrigger>
           <TabsTrigger value="fields">Fields</TabsTrigger>
           <TabsTrigger value="validationRules">Validation Rules</TabsTrigger>
+          <TabsTrigger value="apexClasses">Apex Classes</TabsTrigger>
+          <TabsTrigger value="apexTriggers">Apex Triggers</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profiles">
@@ -92,6 +128,22 @@ export default function Compare() {
             sourceData={sourceRules || {}}
             targetData={targetRules || {}}
             type="Validation Rules"
+          />
+        </TabsContent>
+
+        <TabsContent value="apexClasses">
+          <MetadataComparison
+            sourceData={sourceApexClasses || {}}
+            targetData={targetApexClasses || {}}
+            type="Apex Classes"
+          />
+        </TabsContent>
+
+        <TabsContent value="apexTriggers">
+          <MetadataComparison
+            sourceData={sourceApexTriggers || {}}
+            targetData={targetApexTriggers || {}}
+            type="Apex Triggers"
           />
         </TabsContent>
       </Tabs>
